@@ -107,8 +107,8 @@ def q_learning(runs):
     decay = 1.
 
     env = SumoEnvironment(
-        net_file='nets/arterial_grid/arterialGrid.net.xml',
-        route_file='nets/arterial_grid/arterialGrid.rou.xml',
+        net_file='nets/arterial-grid/arterialGrid.net.xml',
+        route_file='nets/arterial-grid/arterialGrid.rou.xml',
         #additional_sumo_cmd='-a /home/bazzan/pesquisa/traffic/sumoNets/arterialGridNoPedestrians/arterialGrid.add.xml',
         # reward_fn="average-speed",
         reward_fn="queue",
@@ -152,9 +152,9 @@ def twoContexts_q_learning(runs):
     gamma = 0.95
     decay = 0.995
     env = SumoEnvironment(
-        net_file='nets/arterialGrid2Context/arterialGrid.net.xml',
-        route_file='nets/arterialGrid2Context/arterialGrid.rou.xml',
-        additional_sumo_cmd='-a nets/arterialGrid2Context/arterialGrid2Contexts.add.xml',
+        net_file='nets/arterial-grid-2-context/arterialGrid.net.xml',
+        route_file='nets/arterial-grid-2-context/arterialGrid.rou.xml',
+        additional_sumo_cmd='-a nets/arterial-grid-2-context/arterialGrid2Contexts.add.xml',
         reward_fn="queue",
         use_gui=True,
         num_seconds=25000,
