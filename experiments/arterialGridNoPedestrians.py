@@ -164,7 +164,7 @@ def twoContexts_q_learning(runs, vg_neighbors_dict):
         additional_sumo_cmd='-a nets/arterial-grid-2-context/arterialGrid2Contexts.add.xml',
         reward_fn="queue",
         use_gui=True,
-        num_seconds=25000,
+        num_seconds=10000,
         min_green=10,
         max_green=50,
         yellow_time=3,
@@ -191,19 +191,19 @@ def twoContexts_q_learning(runs, vg_neighbors_dict):
             s, r, done, info = env.step(action=actions)
 
             current_step = env.sim_step
-            print(current_step)
+            print(f"{current_step=}")
 
             for agent_id in s.keys():
 
                 # agent learns with vg neighbors information
                 vg_neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
-                for vg_neighbor in vg_neighbors_in_current_step:
-                    vg_neighbor_info = [s[vg_neighbor], actions[vg_neighbor]]
-                    print(f"{actions[vg_neighbor]=}")
-                    ql_agents[agent_id].learn(next_state=env.encode(s[vg_neighbor], vg_neighbor), reward=r[vg_neighbor], vg_info=vg_neighbor_info)
+                print(f"{agent_id}: {vg_neighbors_in_current_step}")
+                for vg_neighbor_id in vg_neighbors_in_current_step:
+                    vg_neighbor_info = (ql_agents[vg_neighbor_id].state, ql_agents[vg_neighbor_id].action)
+                    ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[vg_neighbor_id], vg_info=vg_neighbor_info)
                 
                 # agent learns with its own information
-                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id], vg_info=[])
+                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id], vg_info=())
 
         env.save_csv('outputs/arterialGridNoPedestrians/arterialGridQL_queue_2contexts', run)
         env.close()
@@ -219,7 +219,6 @@ def get_graph_neighbors_interval(graph_neighbors: dict, current_step: int) -> li
                 if interval[0] < current_step <= interval[1]:
                     return graph_neighbors[interval]
             i += 1
-        #print("Interval not found, returning empty list")
         return []
 
 ACTION = 0

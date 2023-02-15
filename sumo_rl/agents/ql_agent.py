@@ -33,8 +33,10 @@ class QLAgent:
         
         s1 = next_state
 
-        print(f"{a=}")
-       
+        if s not in self.q_table:
+            self.q_table[s] = [0 for _ in range(self.action_space.n)]
+
+        #if s in self.q_table:
         self.q_table[s][a] = self.q_table[s][a] + self.alpha*(reward + self.gamma*max(self.q_table[s1]) - self.q_table[s][a])
         self.state = s1
         self.acc_reward += reward
