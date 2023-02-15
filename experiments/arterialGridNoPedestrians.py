@@ -195,15 +195,19 @@ def twoContexts_q_learning(runs, vg_neighbors_dict):
 
             for agent_id in s.keys():
 
+                # agent learns with its own information
+                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id], vg_info=())
+
+                # diferença entre agente aprender com seus valores antes e depois com valores do vg?
+                # quando agente usa seus valores antes, não tranca na troca de contexto aos 5000 step
+                
                 # agent learns with vg neighbors information
                 vg_neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
                 print(f"{agent_id}: {vg_neighbors_in_current_step}")
                 for vg_neighbor_id in vg_neighbors_in_current_step:
                     vg_neighbor_info = (ql_agents[vg_neighbor_id].state, ql_agents[vg_neighbor_id].action)
-                    ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[vg_neighbor_id], vg_info=vg_neighbor_info)
+                    ql_agents[agent_id].learn(next_state=env.encode(s[vg_neighbor_id], vg_neighbor_id), reward=r[vg_neighbor_id], vg_info=vg_neighbor_info)
                 
-                # agent learns with its own information
-                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id], vg_info=())
 
         env.save_csv('outputs/arterialGridNoPedestrians/arterialGridQL_queue_2contexts', run)
         env.close()
