@@ -1,7 +1,8 @@
-import argparse
+import argparse as ap
 import os
 import sys
 import pandas as pd
+import pickle
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -12,6 +13,11 @@ else:
 from sumo_rl import SumoEnvironment
 from sumo_rl.agents import QLAgent
 from sumo_rl.exploration import EpsilonGreedy
+
+parser = ap.ArgumentParser()
+parser.add_argument("-f", "--vg_file", 
+                             help="Path to pickle file with information of virtual graph")
+args = parser.parse_args()
 
 # FIXED TIME, ONE CONTEXT
 def fixed_times(runs):
@@ -147,7 +153,8 @@ def q_learning(runs):
 
 
 # QL, 2 CONTEXTS
-def twoContexts_q_learning(runs):
+def twoContexts_q_learning(runs, vg_neighbors_dict):
+    print(vg_neighbors_dict)
     alpha = 0.05
     gamma = 0.95
     decay = 0.995
@@ -183,12 +190,31 @@ def twoContexts_q_learning(runs):
 
             s, r, done, info = env.step(action=actions)
 
+            current_step = env.sim_step
+            print(current_step)
+
             for agent_id in s.keys():
+                neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
+                print(agent_id)
+                print(neighbors_in_current_step)
                 ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id])
 
         env.save_csv('outputs/arterialGridNoPedestrians/arterialGridQL_queue_2contexts', run)
         env.close()
 
+def get_graph_neighbors_interval(graph_neighbors: dict, current_step: int) -> list:
+        number_of_intervals = len(graph_neighbors)
+        i = 0
+        for interval in graph_neighbors:
+            if i == number_of_intervals-1:
+                if interval[0] <= current_step <= interval[1]:
+                    return graph_neighbors[interval]
+            else:
+                if interval[0] < current_step <= interval[1]:
+                    return graph_neighbors[interval]
+            i += 1
+        #print("Interval not found, returning empty list")
+        return []
 
 ACTION = 0
 Q_VALUES = 1
@@ -312,6 +338,9 @@ def knn_with_transfer(runs, k, transfer_distance_threshold):
 '''
 
 if __name__ == '__main__':
+    print("Reading graph neighbors dictionary from pickle file...")
+    with open(f"{args.vg_file}", "rb") as vg_dict_pickle:
+        vg_neighbors_dict = pickle.load(vg_dict_pickle, encoding="bytes")
     # twoContextsFixed(10)
     # twoContexts_q_learning(5)
     # knn(runs=5, k=10)
@@ -321,4 +350,4 @@ if __name__ == '__main__':
     #knn_with_transfer(runs=1, k=10, transfer_distance_threshold=0.001)
     #knn_with_transfer(runs=1, k=10, transfer_distance_threshold=0.1)
     #knn_with_transfer(runs=1, k=10, transfer_distance_threshold=0.05)
-    twoContexts_q_learning(1)
+    twoContexts_q_learning(1, vg_neighbors_dict)
