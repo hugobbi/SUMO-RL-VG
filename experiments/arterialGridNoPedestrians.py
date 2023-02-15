@@ -194,10 +194,16 @@ def twoContexts_q_learning(runs, vg_neighbors_dict):
             print(current_step)
 
             for agent_id in s.keys():
-                neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
-                print(agent_id)
-                print(neighbors_in_current_step)
-                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id])
+
+                # agent learns with vg neighbors information
+                vg_neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
+                for vg_neighbor in vg_neighbors_in_current_step:
+                    #vg_neighbor_info = [s[vg_neighbor], actions[vg_neighbor]]
+                    print(f"{actions[vg_neighbor]=}")
+                    ql_agents[agent_id].learn(next_state=env.encode(s[vg_neighbor], vg_neighbor), reward=r[vg_neighbor], vg_info=[])
+                
+                # agent learns with its own information
+                ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id], vg_info=[])
 
         env.save_csv('outputs/arterialGridNoPedestrians/arterialGridQL_queue_2contexts', run)
         env.close()

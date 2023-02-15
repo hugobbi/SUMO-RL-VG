@@ -20,13 +20,21 @@ class QLAgent:
         self.action = self.exploration.choose(self.q_table, self.state, self.action_space)
         return self.action
 
-    def learn(self, next_state, reward, done=False):
+    def learn(self, next_state, reward, vg_info, done=False):
         if next_state not in self.q_table:
             self.q_table[next_state] = [0 for _ in range(self.action_space.n)]
 
-        s = self.state
+        if len(vg_info) == 0:
+            s = self.state
+            a = self.action
+        else:
+            s = vg_info[0]
+            a = vg_info[1]
+        
         s1 = next_state
-        a = self.action
+
+        print(f"{a=}")
+       
         self.q_table[s][a] = self.q_table[s][a] + self.alpha*(reward + self.gamma*max(self.q_table[s1]) - self.q_table[s][a])
         self.state = s1
         self.acc_reward += reward
