@@ -22,6 +22,7 @@ args = parser.parse_args()
 # QL
 def q_learning(runs):
     print("Running simulation with QL and no VG")
+
     alpha = 0.05
     gamma = 0.95
     decay = 0.995
@@ -30,8 +31,8 @@ def q_learning(runs):
         route_file='nets/diamond_tls/DiamondTLs.flow_099.rou.xml',
         # reward_fn="average-speed",
         reward_fn="queue",
-        use_gui=True,
-        num_seconds=5000,
+        use_gui=False,
+        num_seconds=15000,
         min_green=10,
         max_green=50,
         yellow_time=3,
@@ -64,13 +65,13 @@ def q_learning(runs):
         env.close()
 
 # QL + VG
-def q_learning_VG(runs, vg_neighbors_dict_file):
+def q_learning_vg(runs, vg_neighbors_dict_file):
     print("Running simulation with QL and VG")
     print("Reading graph neighbors dictionary from pickle file...")
     with open(vg_neighbors_dict_file, "rb") as vg_dict_pickle: # args.vg_file
         vg_neighbors_dict = pickle.load(vg_dict_pickle, encoding="bytes")
-
     print(vg_neighbors_dict)
+
     alpha = 0.05
     gamma = 0.95
     decay = 0.995
@@ -80,7 +81,7 @@ def q_learning_VG(runs, vg_neighbors_dict_file):
         # reward_fn="average-speed",
         reward_fn="queue",
         use_gui=False,
-        num_seconds=5000,
+        num_seconds=15000,
         min_green=10,
         max_green=50,
         yellow_time=3,
@@ -142,3 +143,4 @@ OBSERVATIONS = 3
 
 if __name__ == '__main__':
     q_learning(1)
+    #q_learning_vg(1, args.vg_file)
