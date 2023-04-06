@@ -22,10 +22,9 @@ args = parser.parse_args()
 # QL
 def q_learning(runs):
     print("Running simulation with QL and no VG")
-    alpha = 0.1
-    gamma = 0.75
-    decay = 1.
-
+    alpha = 0.05
+    gamma = 0.95
+    decay = 0.995
     env = SumoEnvironment(
         net_file='nets/diamond_tls/DiamondTLs.net.xml',
         route_file='nets/diamond_tls/DiamondTLs.flow_099.rou.xml',
