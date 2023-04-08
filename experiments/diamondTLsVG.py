@@ -70,11 +70,7 @@ def q_learning_vg(runs, vg_neighbors_dict_file):
     print("Reading graph neighbors dictionary from pickle file...")
     with open(vg_neighbors_dict_file, "rb") as vg_dict_pickle: # args.vg_file
         vg_neighbors_dict = pickle.load(vg_dict_pickle, encoding="bytes")
-    #print(vg_neighbors_dict)
-
-    agents_in_vg = vg_neighbors_dict.keys()
-    print("agentes no vg")
-    print(agents_in_vg)
+    print(f"VG neighbors loaded, size of dict = {len(vg_neighbors_dict.keys())}")
 
     alpha = 0.05
     gamma = 0.95
@@ -85,7 +81,7 @@ def q_learning_vg(runs, vg_neighbors_dict_file):
         # reward_fn="average-speed",
         reward_fn="queue",
         use_gui=False,
-        num_seconds=500,
+        num_seconds=15000,
         min_green=10,
         max_green=50,
         yellow_time=3,
@@ -104,9 +100,7 @@ def q_learning_vg(runs, vg_neighbors_dict_file):
         for ts in initial_states.keys():
             ql_agents[ts].state = env.encode(initial_states[ts], ts)
 
-        print("agentes")
-        print(ql_agents.keys())
-
+        agents_in_vg = sorted(vg_neighbors_dict.keys()) # agents that have a connection in the vg and will learn from this connection
         infos = []
         done = {'__all__': False}
         while not done['__all__']:
@@ -116,27 +110,20 @@ def q_learning_vg(runs, vg_neighbors_dict_file):
 
             current_step = env.sim_step
             print(f"{current_step=}")
-            for agent_id in s.keys():
-                if is_agent_in_vg(agent_id, vg_neighbors_dict):
-                    vg_neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
-                    print(f"{agent_id}: {vg_neighbors_in_current_step}")
-                    for vg_neighbor_id in vg_neighbors_in_current_step:
-                        # agent updates its q-table with vg information
-                        ql_agents[agent_id].update_q_table(ql_agents[vg_neighbor_id].state, ql_agents[vg_neighbor_id].action, reward=r[vg_neighbor_id], next_state=env.encode(s[vg_neighbor_id], vg_neighbor_id))
+            for agent_id in agents_in_vg:
+                vg_neighbors_in_current_step = get_graph_neighbors_interval(vg_neighbors_dict[agent_id], current_step)
+                print(f"{agent_id}: {vg_neighbors_in_current_step}")
+                for vg_neighbor_id in vg_neighbors_in_current_step:
+                    # agent updates its q-table with vg information
+                    ql_agents[agent_id].update_q_table(ql_agents[vg_neighbor_id].state, ql_agents[vg_neighbor_id].action, reward=r[vg_neighbor_id], next_state=env.encode(s[vg_neighbor_id], vg_neighbor_id))
 
             for agent_id in s.keys():
                 # agent learns with its own information
                 ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id])
 
-        folder_name_graph_size = vg_neighbors_dict_file[:-6:-4] # adds sim files to new folder separating by graph size
+        folder_name_graph_size = vg_neighbors_dict_file[-6:-4] # adds sim files to new folder separating by graph size
         env.save_csv(f'outputs/diamond_tls/ql_vg/{folder_name_graph_size}/diamond_tls_ql_vg' + str(random.randint(1, 1000)), run)
         env.close()
-
-# check if agent in vg cuz i think in vg only if has at least one connection, check that and do the if with the old function this should do it
-
-def is_agent_in_vg(agent_id: str, vg: dict) -> bool:
-    agents_in_vg = vg.keys()
-    return True if agent_id in agents_in_vg else False
 
 def get_graph_neighbors_interval(graph_neighbors: dict, current_step: int) -> list:
         number_of_intervals = len(graph_neighbors)
