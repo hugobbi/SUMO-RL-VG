@@ -61,7 +61,8 @@ def q_learning(runs):
             for agent_id in s.keys():
                 ql_agents[agent_id].learn(next_state=env.encode(s[agent_id], agent_id), reward=r[agent_id])
 
-        env.save_csv('outputs/diamond_tls/ql_no_vg/diamond_tls_ql', run)
+
+        env.save_csv('outputs/diamond_tls/ql_no_vg/diamond_tls_ql' + str(random.randint(1, 1000)), run)
         env.close()
 
 # QL + VG
