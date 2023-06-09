@@ -15,7 +15,7 @@ from sumo_rl.agents import QLAgent
 from sumo_rl.exploration import EpsilonGreedy
 
 parser = ap.ArgumentParser()
-parser.add_argument("-f", "--vg_file", 
+parser.add_argument("-f", "--vg-file", dest="vg_file", 
                              help="Path to pickle file with information of virtual graph", default=None)
 args = parser.parse_args()
 
